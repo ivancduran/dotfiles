@@ -15,6 +15,9 @@ set undodir=~/.vim/undodir
 set undofile
 set incsearch
 set colorcolumn=80
+set hidden
+set cmdheight=2
+set updatetime=300
 
 highlight ColorColumn ctermbg=0 guibg=lightgrey
 
@@ -34,10 +37,16 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'tpope/vim-surround'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+Plug 'tweekmonster/fzf-filemru'
+Plug 'bronson/vim-trailing-whitespace'
+Plug 'yggdroot/indentline'
 Plug 'majutsushi/tagbar'
+
 "Plug 'jeetsukumaran/vim-buffergator'
-Plug 'zefei/vim-wintabs'
-Plug 'zefei/vim-wintabs-powerline'
+"Plug 'zefei/vim-wintabs'
+"Plug 'zefei/vim-wintabs-powerline'
+Plug 'ap/vim-buftabline'
+
 Plug 'editorconfig/editorconfig-vim'
 Plug 'ryanoasis/vim-devicons'
 "Plug 'thaerkh/vim-workspace'
@@ -45,10 +54,11 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'jremmen/vim-ripgrep'
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
-"Plug 'vim-utils/vim-man'
+Plug 'vim-utils/vim-man'
 Plug 'lyuts/vim-rtags'
 Plug 'mbbill/undotree'
-"Plug 'dense-analysis/ale'
+Plug 'gilsondev/searchtasks.vim'
+Plug 'scrooloose/syntastic'
 
 "LANGUAGES
 Plug 'fatih/vim-go'
@@ -60,7 +70,7 @@ call plug#end()
 
 colorscheme dracula
 
-"KEY BINDINGS 
+"KEY BINDINGS
 if executable('rg')
     let g:rg_derive_root='true'
 endif
@@ -92,8 +102,7 @@ map <C-b> :CocCommand explorer<CR>
 map <C-x> :CocCommand explorer --preset floating<CR>
 autocmd BufEnter * if (winnr("$") == 1 && &filetype == 'coc-explorer') | q | endif
 
-map <C-m> :TagbarToggle<CR>
-
+"map <C-m> :TagbarToggle<CR>
 "map <C-b> :NERDTreeToggle<CR>
 map <C-h> :wincmd h<CR>
 map <C-j> :wincmd j<CR>
@@ -103,17 +112,19 @@ map <C-l> :wincmd l<CR>
 "nnoremap <leader>j :wincmd j<CR>
 "nnoremap <leader>k :wincmd k<CR>
 "nnoremap <leader>l :wincmd l<CR>
-nnoremap <leader>u :UndotreeToggle<CR>
+nnoremap <leader>u :UndotreeToggle <bar> :UndotreeFocus<CR>
 nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
-nnoremap <leader>ps :Rg<SPACE>
+nnoremap <leader>r :Rg<SPACE>
+nnoremap <leader>a :Ag<SPACE>
 nnoremap <silent> <Leader>= :vertical resize +50<CR>
 nnoremap <silent> <Leader>- :vertical resize -50<CR>
 nnoremap <silent> <Leader>0 :vertical resize 100%<CR>
 
 "FZF
-map <C-p> :Files<CR>
+map <C-p> :FilesMru<CR>
 nnoremap <leader>f :BLines<CR>
-nnoremap <leader>b :Buffers<CR>
+"nnoremap <leader>b :Buffers<CR>
+map <C-i> :Buffers<CR>
 
 "COC
 nmap <leader>gd <Plug>(coc-definition)
@@ -121,6 +132,20 @@ nmap <leader>gy <Plug>(coc-type-definition)
 nmap <leader>gi <Plug>(coc-implementation)
 nmap <leader>gr <Plug>(coc-references)
 nnoremap <leader>cr :CocRestart
+
+" Use K to show documentation in preview windows
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+" use <tab> for trigger completion and navigate to the next complete item
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~ '\s'
+endfunction
+
+inoremap <silent><expr> <Tab>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<Tab>" :
+      \ coc#refresh()
 
 "nnoremap <leader>p :PrettierAsync<CR>
 
@@ -153,7 +178,28 @@ nnoremap <leader>cr :CocRestart
 "
 
 nmap <leader>bd :bufdo bd<CR>
+nmap <leader>bc :bd<CR>
 map gn :bn<cr>
 map gp :bp<cr>
-map gx :bd<cr>
 
+"inoremap <silent><expr> <TAB>
+      "\ pumvisible() ? coc#_select_confirm() :
+      "\ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
+      "\ <SID>check_back_space() ? "\<TAB>" :
+      "\ coc#refresh()
+
+"function! s:check_back_space() abort
+  "let col = col('.') - 1
+  "return !col || getline('.')[col - 1]  =~# '\s'
+"endfunction
+
+"let g:coc_snippet_next = '<tab>'
+
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
